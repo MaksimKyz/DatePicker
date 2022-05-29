@@ -1,26 +1,42 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useContext, useState} from 'react';
 import styled from "styled-components";
-import moment from "moment";
 import arrow from '../../../../assets/arrow.svg'
+import {Context} from "../../../../Context/Context";
+import {TypeMoment} from "../../../SuperDataPicker/SuperDataPicker";
+import ChangeMonth from "../ChangeMonth/ChangeMonth";
 export interface MonthSwitcherProps {
-    today:moment.Moment
-    decrementMonth:()=>void
-    incrementMonth:()=>void
+    setChangeMonth:(isShow:boolean)=>void
+    setChangeYear:(isShow:boolean)=>void
 }
 
-const MonthSwitcher: FC<MonthSwitcherProps> = ({today,decrementMonth,incrementMonth}) => {
+
+const MonthSwitcher: FC<MonthSwitcherProps> = (props) => {
+    const { momentField,changeMoment } = useContext(Context)
+    const incrementMonth = () =>{
+        changeMoment(momentField.moment.clone().add(1,'month'),TypeMoment.Absolute)
+    }
+    const decrementMonth = () => {
+      changeMoment(momentField.moment.clone().subtract(1,'month'),TypeMoment.Absolute)
+    }
     return (
-        <MonthSwitcherContainer>
-            <SwitchMonth isLeft={true} onClick={decrementMonth}>
-                <img src={arrow} alt=""/>
-            </SwitchMonth>
-            <CurrentMonth>
-                {today.format('MMMM YYYY')}
-            </CurrentMonth>
-            <SwitchMonth isLeft={false} onClick={incrementMonth}>
-                <img src={arrow} alt=""/>
-            </SwitchMonth>
-        </MonthSwitcherContainer>
+        <>
+            <MonthSwitcherContainer>
+                <SwitchMonth isLeft={true} onClick={decrementMonth}>
+                    <img src={arrow} alt=""/>
+                </SwitchMonth>
+                <MonthAndYear>
+                    <CurrentMonth onClick={()=>props.setChangeMonth(true)}>
+                        {momentField.moment.format('MMMM')}
+                    </CurrentMonth>
+                    <CurrentYear onClick={()=>props.setChangeYear(true)}>
+                        {momentField.moment.format('YYYY')}
+                    </CurrentYear>
+                </MonthAndYear>
+                <SwitchMonth isLeft={false} onClick={incrementMonth}>
+                    <img src={arrow} alt=""/>
+                </SwitchMonth>
+            </MonthSwitcherContainer>
+        </>
     );
 };
 
@@ -32,7 +48,7 @@ const MonthSwitcherContainer = styled.div`
   align-items: center;
   justify-content: space-between;
   height: 44px;
-  width: 100%;
+  width: 93%;
 `
 const SwitchMonth = styled.div<{isLeft:boolean}>`
   height: 100%;
@@ -50,4 +66,26 @@ const SwitchMonth = styled.div<{isLeft:boolean}>`
 const CurrentMonth = styled.div`
   font-size: 20px;
   font-weight: 500;
+  cursor: pointer;
+  :hover{
+    color: #006BB4;
+  }
+`
+
+const CurrentYear = styled.div`
+  font-size: 20px;
+  color: #69707D;
+  cursor: pointer;
+  font-weight: 300;
+  margin-left: 10px;
+  :hover{
+    color: #006BB4;
+  }
+`
+
+const MonthAndYear = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
 `

@@ -6,7 +6,7 @@ type position = 'left'|'right'
 export interface DropDownMenuProps {
     position?:position;
     children?:React.ReactElement;
-    value:string|React.ReactElement;
+    value?:string|React.ReactElement;
     width?:string
 }
 

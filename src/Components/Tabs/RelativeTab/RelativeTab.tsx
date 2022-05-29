@@ -1,52 +1,40 @@
-import React, {ChangeEvent, FC, useEffect, useState} from 'react';
+import React, {ChangeEvent, FC, useContext, useEffect, useState} from 'react';
 import CustomInput from "../../CustomInput/CustomInput";
 import styled from "styled-components";
 import DropDownList from "../../DropDownList/DropDownList";
-import moment from "moment";
-import usePeriod from "../../../hooks/usePeriod";
-import {valuesDatePicker} from "../../SuperDataPicker/SuperDataPicker";
-import {arrRelative, decipherToRelative} from "../../../helpers";
+import {arrRelative} from "../../../helpers";
+import {Context} from "../../../Context/Context";
+import useDecipherToRelative from "../../../hooks/useDecipherToRelative";
+import {TypeMoment} from "../../SuperDataPicker/SuperDataPicker";
 
 export interface RelativeTabProps {
     tittle:string;
-    currentMoment:string
-    changeValue:(e:valuesDatePicker)=>void;
-    relativeValues: { value:number,period:string };
-    changeRelativeValues:(value:number,period:string )=>void
 }
 
-const RelativeTab: FC<RelativeTabProps> = ({relativeValues,...props}) => {
-    const [timePeriod,setTimePeriod] = useState(relativeValues.value)
-    const [period,setPeriod] = useState(relativeValues.period)
-    const currentMoment = usePeriod(moment().clone(),timePeriod,period)
+const RelativeTab: FC<RelativeTabProps> = ({...props}) => {
+    const { changeMoment,momentField } = useContext(Context)
+
+    const {currentMoment,time,changeTime,timeName,changeTimeName} = useDecipherToRelative(momentField.moment)
 
     useEffect(()=>{
-        setTimePeriod(decipherToRelative(props.currentMoment).value||15)
-        setPeriod(decipherToRelative(props.currentMoment).period||'m')
-    },[])
-
-    useEffect(()=>{
-        props.changeValue({...currentMoment,text:currentMoment.moment.fromNow()})
+        changeMoment(currentMoment,TypeMoment.Relative)
     },[currentMoment])
 
-    useEffect(()=>{
-        props.changeRelativeValues(timePeriod,period)
-    },[timePeriod,period])
-
     const changePeriod = (e:string)=>{
-        setPeriod(e)
+        changeTimeName(e)
     }
 
     const onChange = (e:ChangeEvent<HTMLInputElement>) => {
         if (Number(e.target.value)>0){
-            setTimePeriod(Number(e.target.value))
+            changeTime(Number(e.target.value))
         }
     }
+
     return (
         <div>
             <InputContainer>
-                <CustomInput value={timePeriod} onChange={onChange}/>
-                <DropDownList optionsArray={arrRelative} value={period} changePeriod={changePeriod}/>
+                <CustomInput value={time} onChange={onChange}/>
+                <DropDownList optionsArray={arrRelative} value={timeName} changePeriod={changePeriod}/>
             </InputContainer>
         </div>
     );

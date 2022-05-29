@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useCallback, useEffect, useState} from 'react';
 import CustomButton from "../CustomButton/CustomButton";
 import refresh from "../../assets/refresh.svg";
 import calendar from '../../assets/calendar.svg'
@@ -9,108 +9,123 @@ import moment from "moment";
 import {usePrevious} from "../../hooks/usePrevios";
 import DatePopoverButton from "../DatePopoverButton/DatePopoverButton";
 import QuickValue from "../QuickValue/QuickValue";
-import {decipher} from "../../helpers";
+import {Context} from "../../Context/Context";
+import useDecipher from "../../hooks/useDecipher";
+import useDecipherRelative from "../../hooks/useDecipherToRelative";
+import {Time} from "../../helpers";
+import useEncrypt from "../../hooks/useEncrypt";
 
+
+export enum TypeMoment {
+    Relative = 'Relative',
+    Absolute = 'Absolute',
+    Now = 'Now'
+}
 
 export interface valuesDatePicker{
-    tittle:string;
     moment:moment.Moment,
-    text:string,
+    type:TypeMoment,
 }
 
 export interface SuperDataPickerProps {
     showUpdateButton?:boolean
-    onTimeChange:(start:moment.Moment,end:moment.Moment)=>void
+    onTimeChange:(start:string,end:string)=>void
     start?:string;
     end?:string
 }
 
-const SuperDataPicker: FC<SuperDataPickerProps> = ({showUpdateButton= true,onTimeChange,start='now-15m',end='now'}) => {
-    const [startValue,setStartValue] = useState<valuesDatePicker>({tittle:'',moment:moment(),text:''})
-    const [endValue,setEndValue] = useState<valuesDatePicker>({tittle:'',moment:moment(),text:''})
+const SuperDataPicker: FC<SuperDataPickerProps> = ({showUpdateButton= true,onTimeChange,start='now-15h',end='now'}) => {
+    const [startValue,setStartValue] = useState<valuesDatePicker>({moment:moment(),type:TypeMoment.Relative})
+    const [endValue,setEndValue] = useState<valuesDatePicker>({moment:moment(),type:TypeMoment.Absolute})
+    const [textForQuick,setTextForQuick] = useState('')
     const [isSent,setSent] = useState(true)
-    const [isUpdate,setUpdate] = useState(false)
-    const prevStart = usePrevious(startValue);
-    const prevEnd = usePrevious(endValue);
+
+    const {time:timeStart,timeName:timeNameStart} = useDecipherRelative(startValue.moment)
+    const {time:timeEnd,timeName:timeNameEnd} = useDecipherRelative(endValue.moment)
+
+    const {currentMoment:startMoment,type:startType} = useDecipher(start)
+    const {currentMoment:endMoment,type:endType} = useDecipher(end)
+
+    const encryptStart = useEncrypt(startValue.moment)
+    const encryptEnd = useEncrypt(endValue.moment)
+
+    const timeChange = () => {
+        onTimeChange(encryptStart,encryptEnd)
+    }
 
     useEffect(()=>{
-        const propsStartMoment = decipher(start)
-        const propsEndMoment = decipher(end)
-        setStartValue({tittle:start,moment:propsStartMoment,text:propsStartMoment.fromNow()})
-        setEndValue({tittle:end,moment:propsEndMoment,text:propsEndMoment.fromNow()})
-    },[])
+        setStartValue({moment:startMoment,type:startType})
+        setEndValue({moment:endMoment,type:endType})
+    },[startMoment,startType,endMoment,endType])
 
     useEffect(()=>{
         if (!showUpdateButton){
             timeChange()
         }
-        setUpdate((!!startValue.text && prevStart.text!==startValue.text)||(!!endValue.text && prevEnd.text!==endValue.text) )
     },[startValue,endValue])
 
-    const timeChange = () => {
-        onTimeChange(decipher(startValue.tittle),decipher(endValue.tittle))
-    }
-
+    useEffect(()=>{
+        if (endValue.type===TypeMoment.Now && startValue.type === TypeMoment.Relative && isSent){
+            setTextForQuick(`Last ${timeStart} ${Time(timeNameStart)}`)
+        }
+        if (startValue.type===TypeMoment.Now && endValue.type === TypeMoment.Relative && isSent){
+            setTextForQuick(`Next ${timeEnd} ${Time(timeNameEnd)}`)
+        }
+    },[isSent,timeStart,timeNameStart,timeEnd,timeNameEnd])
     const onButtonClick = () => {
         timeChange()
-        setUpdate(false)
         setSent(true)
     }
 
-    const changeStart = (e:valuesDatePicker) => {
-        setStartValue(e)
+    const changeStart =useCallback((moment:moment.Moment,type:TypeMoment) => {
+        setStartValue({moment:moment,type:type})
+    },[])
+
+    const changeEnd = (moment:moment.Moment,type:TypeMoment) => {
+        setEndValue({moment:moment,type:type})
     }
 
-    const changeEnd = (e:valuesDatePicker) => {
-        setEndValue(e)
-    }
-
-    const clickCommonlyUsed = (start:valuesDatePicker,end:valuesDatePicker) =>{
+    const clickCommonlyUsed = (tittle:string,start:valuesDatePicker,end:valuesDatePicker) =>{
         setStartValue(start)
         setEndValue(end)
-        setSent(true)
+        setTextForQuick(tittle)
     }
 
-    const errorValue = startValue.moment.isAfter(endValue.moment)
-    const disableRefreshButton = !startValue.text || !endValue.text || errorValue
+    const deleteQuick = () =>{
+        setTextForQuick('')
+        setSent(false)
+    }
+
+    const isError = startValue?.moment?.isAfter(endValue?.moment)
+
 
     return (
             <DataPicker>
                 <DropDownContainer>
-                    <DropDownDate
-                        width={'50px'}
-                        value={<ImageCont><img src={calendar}/></ImageCont>}
-                        position='left'
-                    >
                         <DatePickerMenu clickCommonlyUsed={clickCommonlyUsed} onPeriodChange={timeChange}/>
-                    </DropDownDate>
                     <PickerFields>
 
-                        <QuickValue
-                            changeQuick={()=>setSent(false)}
-                            isSent={isSent}
-                            pickerValues={{start:startValue.tittle,end:endValue.tittle}}
-                        />
-                        <Value isUpdate={isUpdate} isError={errorValue}>
-                            <DatePopoverButton
-                                position='left'
-                                value={startValue}
-                                changeValue={changeStart}
-                            />
+                        <QuickValue deleteQuick={deleteQuick} text={textForQuick}/>
+
+                        <Value isUpdate={false} isError={isError}>
+                            <Context.Provider value={{ momentField:startValue,changeMoment:changeStart}}>
+                                <DatePopoverButton  position='left'/>
+                            </Context.Provider>
                         </Value>
+
                         <Delimiter>→</Delimiter>
-                        <Value isUpdate={isUpdate} isError={errorValue}>
-                            <DatePopoverButton
-                                value={endValue}
-                                startTab={2}
-                                changeValue={changeEnd}
-                            />
+
+                        <Value isUpdate={false} isError={isError}>
+                            <Context.Provider value={{momentField:endValue,changeMoment:changeEnd}}>
+                                <DatePopoverButton/>
+                            </Context.Provider>
                         </Value>
+
                     </PickerFields>
                 </DropDownContainer>
                 {showUpdateButton &&
                     <RefreshButton>
-                        <CustomButton disabled={disableRefreshButton} onClick={onButtonClick}>
+                        <CustomButton disabled={isError} onClick={onButtonClick}>
                             <div style={{display:'flex'}}>
                                 <img src={refresh} alt=""/>
                                 <span style={{fontSize:'16px',marginLeft:'5px'}}>Refresh</span>
@@ -161,11 +176,4 @@ const Delimiter = styled.div`
 `
 const RefreshButton = styled.div`
     margin-left: 10px;
-`
-const ImageCont = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
 `

@@ -30,6 +30,8 @@ const Input = styled.input<{width:string}>`
   padding: 8px;
   background-color: #fbfcfd;
   outline: none;
+  color:#343741;  
+  font-weight: 500;
   border:1px solid lightgrey;
   :focus{
     border-bottom: 1px solid blue;

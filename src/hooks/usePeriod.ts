@@ -5,33 +5,33 @@ const usePeriod = (moment:moment.Moment,time:number,period:string) => {
     const test = useMemo(()=>{
         switch(period) {
             case 's':
-                return  {moment:moment.subtract(time,"seconds"),tittle:`now-${time}s`}
+                return  moment.subtract(time,"seconds")
             case 'm':
-                return  {moment:moment.subtract(time,"minutes"),tittle:`now-${time}m`}
+                return  moment.subtract(time,"minutes")
             case 'h':
-                return  {moment:moment.subtract(time,"hours"),tittle:`now-${time}h`}
+                return  moment.subtract(time,"hours")
             case 'd':
-                return  {moment:moment.subtract(time,"days"),tittle:`now-${time}d`}
+                return  moment.subtract(time,"days")
             case 'w':
-                return  {moment:moment.subtract(time,"weeks"),tittle:`now-${time}w`}
+                return  moment.subtract(time,"weeks")
             case 'M':
-                return  {moment:moment.subtract(time,"months"),tittle:`now-${time}M`}
+                return  moment.subtract(time,"months")
             case 'y':
-                return  {moment:moment.subtract(time,"years"),tittle:`now-${time}y`}
+                return  moment.subtract(time,"years")
             case 's+':
-                return  {moment:moment.add(time,"seconds"),tittle:`now+${time}s`}
+                return  moment.add(time,"seconds")
             case 'm+':
-                return  {moment:moment.add(time,"minutes"),tittle:`now+${time}m`}
+                return  moment.add(time,"minutes")
             case 'h+':
-                return  {moment:moment.add(time,"hours"),tittle:`now+${time}h`}
+                return  moment.add(time,"hours")
             case 'd+':
-                return  {moment:moment.add(time,"days"),tittle:`now+${time}d`}
+                return  moment.add(time,"days")
             case 'w+':
-                return  {moment:moment.add(time,"weeks"),tittle:`now+${time}w`}
+                return  moment.add(time,"weeks")
             case 'M+':
-                return  {moment:moment.add(time,"months"),tittle:`now+${time}M`}
+                return  moment.add(time,"months")
             case 'y+':
-                return  {moment:moment.add(time,"years"),tittle:`now+${time}y`}
+                return  moment.add(time,"years")
         }
     },[time,period])
     return test

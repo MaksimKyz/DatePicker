@@ -1,53 +1,58 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useContext, useEffect, useState} from 'react';
 import DropDownDate from "../DropDownDate/DropDownDate";
 import Tabs from "../Tabs/Tabs";
 import RelativeTab from "../Tabs/RelativeTab/RelativeTab";
 import AbsoluteTab from "../Tabs/AbsoluteTab/AbsoluteTab";
+import {Context} from "../../Context/Context";
+import useDecipher from "../../hooks/useDecipher";
 import NowTab from "../Tabs/NowTab/NowTab";
-import {valuesDatePicker} from "../SuperDataPicker/SuperDataPicker";
-import {decipherToRelative} from "../../helpers";
+import {TypeMoment} from "../SuperDataPicker/SuperDataPicker";
 
 export interface DatePopoverButtonProps {
-    value:valuesDatePicker;
-    changeValue:(e:valuesDatePicker)=>void;
     position?:'left'|'right';
-    startTab?:number
 }
 
-const DatePopoverButton: FC<DatePopoverButtonProps> = ({value,changeValue,position,startTab=0}) => {
-    const [activeTab,setActiveTab] = useState(startTab)
-    const [relativeValues,setRelativeValues] = useState({value:1,period:'h'})
-    const changeFromRelative = (value:number,period:string) =>{
-        setRelativeValues({value:value,period: period})
+const DatePopoverButton: FC<DatePopoverButtonProps> = ({position}) => {
+    const [activeTab,setActiveTab] = useState<number>()
+    const {momentField,changeMoment} = useContext(Context)
+    const [text,setText] = useState('')
+
+    const changeActiveTab = (tab:number) =>{
+        if (tab === 0){
+            changeMoment(momentField.moment,TypeMoment.Relative)
+        }
+        if (tab === 1){
+            changeMoment(momentField.moment,TypeMoment.Absolute)
+        }
+        if (tab === 2){
+            changeMoment(momentField.moment,TypeMoment.Now)
+        }
     }
 
-
-    const changeActiveTab = (e:number) =>{
-        setActiveTab(e)
-    }
+    useEffect(()=>{
+        if (momentField.type === TypeMoment.Relative){
+            setText(momentField?.moment?.fromNow())
+            setActiveTab(0)
+        }
+        if (momentField.type === TypeMoment.Absolute){
+            setText(momentField?.moment?.clone().format('MMM DD, YYYY HH:mm:ss'))
+            setActiveTab(1)
+        }
+        if (momentField.type === TypeMoment.Now){
+            setText('Now')
+            setActiveTab(2)
+        }
+    },[momentField])
 
     return (
-        <DropDownDate value={value.text} position={position}>
+        <DropDownDate value={text} position={position}>
             <Tabs activeTab={activeTab} changeActiveTab={changeActiveTab}>
-                <RelativeTab
-                    changeRelativeValues={changeFromRelative}
-                    relativeValues={relativeValues}
-                    changeValue={changeValue}
-                    tittle={'Relative'}
-                    currentMoment={value.tittle}
-                />
-                <AbsoluteTab
-                    currentMoment={value.moment}
-                    changeValue={changeValue}
-                    tittle={'Absolute'}
-                />
-                <NowTab
-                    changeValue={changeValue}
-                    tittle={'Now'}
-                />
+                <RelativeTab tittle={'Relative'}/>
+                <AbsoluteTab tittle={'Absolute'}/>
+                <NowTab tittle={'Now'}/>
             </Tabs>
         </DropDownDate>
     );
 };
 
-export default DatePopoverButton;
+export default React.memo(DatePopoverButton);

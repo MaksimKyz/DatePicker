@@ -1,8 +1,7 @@
-import React, {FC} from 'react';
+import React, {ChangeEvent, FC, useEffect, useState} from 'react';
 import styled from "styled-components";
 import moment from "moment";
 import SuperDataPicker from "./SuperDataPicker/SuperDataPicker";
-import {decipher} from "../helpers";
 export interface AppProps {
 
 }
@@ -13,11 +12,9 @@ export interface valueInterface{
 }
 
 
-
 const App: FC<AppProps> = (props) => {
-
-
-    const onTimeChange = (start:moment.Moment, end:moment.Moment) =>{
+    moment.updateLocale('en',{week:{dow:1}})
+    const onTimeChange = (start:string, end:string) =>{
         console.log(start,end)
     }
 
@@ -25,7 +22,7 @@ const App: FC<AppProps> = (props) => {
 
     return (
         <ContainerCenter>
-                <SuperDataPicker onTimeChange={onTimeChange}/>
+                <SuperDataPicker  onTimeChange={onTimeChange}/>
         </ContainerCenter>
     );
 };

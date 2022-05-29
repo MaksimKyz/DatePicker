@@ -1,32 +1,38 @@
-import React, {FC, useMemo, useRef, useState} from 'react';
+import React, {FC, useContext, useMemo, useRef, useState} from 'react';
 import styled from "styled-components";
 import moment from "moment";
 import {useScrollBar} from "../../../../hooks/useScrollBar";
+import {Context} from "../../../../Context/Context";
+import {TypeMoment} from "../../../SuperDataPicker/SuperDataPicker";
 
 export interface TimeSwitcherProps {
-    changeTime:(e:string)=>void
 }
 
-const TimeSwitcher: FC<TimeSwitcherProps> = ({changeTime}) => {
-    const [active,setActive] = useState(0)
+const TimeSwitcher: FC<TimeSwitcherProps> = () => {
+    const { momentField,changeMoment } = useContext(Context)
     const timeRef = useRef(null)
+    useScrollBar(timeRef)
     const totalDays = 48
     const timeArr = [...Array(totalDays)].map((_,index)=> moment().clone().startOf('day').add(30*index,'minute'))
 
-    const clickOnTime = (time:moment.Moment,index:number) =>{
-        changeTime(time.format('hh:mm:ss'))
-        setActive(index)
+
+    const changeTime = (time:moment.Moment) =>{
+        changeMoment(momentField.moment.clone()
+                                .hours(time.hour())
+                                .minute(time.minute())
+                                .seconds(time.seconds()),
+            TypeMoment.Absolute
+        )
     }
 
-    useScrollBar(timeRef)
     return (
         <TimeContainer ref={timeRef}>
             {timeArr.map((time,index)=>(
                 <TimeContent key={index}>
                     <Time
                         key={time.toString()}
-                        onClick={()=>clickOnTime(time,index)}
-                        current={index===active}
+                        onClick={()=>changeTime(time)}
+                        current={time.format('hh:mm:ss')===momentField.moment.format('hh:mm:ss')}
                     >
                         {time.format('HH:mm')}
                     </Time>
@@ -54,12 +60,12 @@ const TimeContent = styled.div`
   align-items: center;
 `
 const Time = styled.div<{current:boolean}>`
-  background: ${props=>props.current?'#d2e4f2':'transparent'};
+  background: ${props=>props.current?'#006BB4':'transparent'};
   padding: 4px 8px;
   margin-bottom: 6px;
   font-size: 12px;
   text-align: right;
-  color: #69707D;
+  color: ${props=>props.current?'#fff':'#69707D'};;
   white-space: nowrap;
   line-height: 12px;
   cursor:pointer;

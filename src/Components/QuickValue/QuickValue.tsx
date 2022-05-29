@@ -1,22 +1,22 @@
 import React, {FC} from 'react';
 import styled from "styled-components";
-import {countQuick} from "../../helpers";
 
 export interface QuickValueProps {
-    pickerValues:{start:string,end:string}
-    isSent:boolean;
-    changeQuick:(e:boolean)=>void;
+    text:string
+    deleteQuick:()=>void;
 }
 
-const QuickValue: FC<QuickValueProps> = ({pickerValues,isSent,changeQuick}) => {
-    const clickOnQuick = () =>{
-        changeQuick(!isSent)
+const QuickValue: FC<QuickValueProps> = ({text,deleteQuick}) => {
+
+
+    const deleteHandler = () =>{
+        deleteQuick()
     }
     return (
             <>
-                {!!countQuick(pickerValues.start,pickerValues.end) && isSent &&
-                    <QuickContainer onClick={clickOnQuick}>
-                        {countQuick(pickerValues.start,pickerValues.end)}
+                {!!text &&
+                    <QuickContainer onClick={deleteHandler}>
+                        {text}
                         <Show>Show dates</Show>
                     </QuickContainer>
                 }

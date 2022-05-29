@@ -1,44 +1,67 @@
 import React, {FC} from 'react';
 import styled from "styled-components";
 import moment from "moment";
-import {valuesDatePicker} from "../../SuperDataPicker/SuperDataPicker";
-import {encrypt} from "../../../helpers";
+import {TypeMoment, valuesDatePicker} from "../../SuperDataPicker/SuperDataPicker";
 
 export interface CommonlyUsedProps {
-    clickCommonlyUsed:(start:valuesDatePicker,end:valuesDatePicker)=>void
+    clickCommonlyUsed:(tittle:string,start:valuesDatePicker,end:valuesDatePicker)=>void
 }
 
-const CommonlyUsed: FC<CommonlyUsedProps> = (props) => {
+const CommonlyUsed: FC<CommonlyUsedProps> = ({clickCommonlyUsed}) => {
     moment.updateLocale('en',{week:{dow:1}})
 
-    const isNow = (e:moment.Moment) =>{
-        if (0 < moment().diff(e) && moment().diff(e)<1000*60){
-            return 'Now'
-        }else return e.add(1,'day').fromNow()
-    }
 
     const arrCommonlyUsed = [
-        {start:moment().startOf('day'),end:moment().endOf('day'),tittle:'Today'},
-        {start:moment().subtract(1,'day').startOf('day'),end:moment().subtract(1,'day').endOf('day'),tittle:'Yesterday'},
-        {start:moment().startOf('week'),end:moment().endOf('week'),tittle:'This week'},
-        {start:moment().startOf('week'),end:moment(),tittle:'Week to day'},
-        {start:moment().startOf('month'),end:moment().endOf('month'),tittle:'This month'},
-        {start:moment().startOf('month'),end:moment(),tittle:'Month to day'},
-        {start:moment().startOf('year'),end:moment().endOf('year'),tittle:'This year'},
-        {start:moment().startOf('year'),end:moment(),tittle:'Year to day'},
+        {
+            tittle:'Today',
+            start:{moment:moment().startOf('day'),type:TypeMoment.Relative},
+            end:{moment:moment().endOf('day'),type:TypeMoment.Relative}
+        },
+        {
+            tittle:'Yesterday',
+            start:{moment:moment().subtract(1,'day').startOf('day'),type: TypeMoment.Relative},
+            end:{moment:moment().subtract(1,'day').endOf('day'),type: TypeMoment.Relative}
+        },
+        {
+            tittle:'This week',
+            start:{moment:moment().startOf('week'),type: TypeMoment.Relative},
+            end:{moment:moment().endOf('week'),type: TypeMoment.Relative}
+        },
+        {
+            tittle:'Week to day',
+            start:{moment:moment().startOf('week'),type: TypeMoment.Relative},
+            end:{moment:moment(),type: TypeMoment.Now}
+        },
+        {
+            tittle:'This month',
+            start:{moment:moment().startOf('month'),type: TypeMoment.Relative},
+            end:{moment:moment().endOf('month'),type: TypeMoment.Relative}
+        },
+        {
+            tittle:'Month to day',
+            start:{moment:moment().startOf('month'),type: TypeMoment.Relative},
+            end:{moment:moment(),type: TypeMoment.Now}
+        },
+        {
+            tittle:'This year',
+            start:{moment:moment().startOf('year'),type: TypeMoment.Relative},
+            end:{moment:moment().endOf('year'),type: TypeMoment.Relative}
+        },
+        {
+            tittle:'Year to day',
+            start:{moment:moment().startOf('year'),type: TypeMoment.Relative},
+            end:{moment:moment(),type: TypeMoment.Now}
+        }
     ]
 
-    const onCLick = (start:moment.Moment,end:moment.Moment) =>{
-        props.clickCommonlyUsed(
-            {tittle:encrypt(start),moment:start,text:isNow(start)},
-            {tittle:encrypt(end),moment:end,text:isNow(end)}
-        )
+    const onCLick = (tittle:string,start:valuesDatePicker,end:valuesDatePicker) =>{
+        clickCommonlyUsed(tittle,start,end)
     }
     return (
         <CommonlyUsedContainer>
             {arrCommonlyUsed.map((item)=>(
                 <CommonlyUsedItem key={item.tittle}>
-                    <span onClick={()=>onCLick(item.start,item.end)}>{item.tittle}</span>
+                    <span onClick={()=>onCLick(item.tittle,item.start,item.end)}>{item.tittle}</span>
                 </CommonlyUsedItem>
             ))}
         </CommonlyUsedContainer>

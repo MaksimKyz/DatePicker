@@ -2,12 +2,19 @@ import React, {FC, useState} from 'react';
 import styled from "styled-components";
 
 export interface TabsProps {
-    children?:React.ReactElement[];
+    children?:React.ReactElement[]
     activeTab?:number;
     changeActiveTab?:(e:number)=>void
 }
 
 const Tabs: FC<TabsProps> = (props) => {
+
+    const changeActive = (index:number)=>{
+        props.changeActiveTab(index)
+    }
+
+
+
     return (
         <>
             <TabsList>
@@ -15,7 +22,7 @@ const Tabs: FC<TabsProps> = (props) => {
                     <TabsListItem
                         isActive={index===props.activeTab}
                         key={child.props.tittle}
-                        onClick={()=>props.changeActiveTab(index)}
+                        onClick={()=>changeActive(index)}
                     >
                         {child.props.tittle}
                     </TabsListItem>
@@ -46,9 +53,11 @@ const TabsListItem = styled.div<{isActive:boolean}>`
   cursor: pointer;
   border-bottom: ${props => props.isActive?'2px solid blue':'1px solid lightgrey'};
   margin-bottom: 10px;
+  font-size: 14px;
   background: ${props => props.isActive?'#e6f0f8':''};
-  color: ${props => props.isActive?'#006BB4':''};
+  color: ${props => props.isActive?'#006BB4':'#343741'};
 `
 const TabContent = styled.div`
   padding: 0 10px 10px 10px;
+  position: relative;
 `

@@ -6,43 +6,27 @@ import styled from "styled-components";
 import useInterval from "../../../hooks/useInterval";
 import {arrInterval} from "../../../helpers";
 
-export interface IntervalCreaterProps {
-    onPeriodChange:Function
+export interface IntervalCreatorProps {
+    period:string
+    valueInterval:number
+    isActiveInterval:boolean
+    changeInterval:(period:string,value:number,isActive:boolean)=>void
 }
 
-const IntervalCreator: FC<IntervalCreaterProps> = (props) => {
+const IntervalCreator: FC<IntervalCreatorProps> = ({period,valueInterval,isActiveInterval,changeInterval}) => {
 
-
-    const [valueInterval,setValueInterval] = useState<number>(0)
-    const [period,setPeriod] = useState('s')
-    const [isActiveInterval,setActiveInterval] = useState(false)
-
-
-    const countInterval = (interval:number,isActiveInterval:boolean) =>{
-        if (!isActiveInterval){
-            return 0
-        }
-        if (period === 's')
-            return interval*1000
-        if (period === 'm')
-            return interval*60*1000
-        if (period === 'h')
-            return interval*60*60*1000
-    }
-
-    useInterval(()=>props.onPeriodChange(),countInterval(valueInterval,isActiveInterval))
-
-    const changeValueInterval = (e:ChangeEvent<HTMLInputElement>) =>{
-        setValueInterval(Number(e.target.value))
-    }
-    const changePeriod = (e:string)=>{
-        setPeriod(e)
-    }
-    const changeIsActiveInterval = (e:boolean) =>{
-        setActiveInterval(e)
-    }
     const disableCheckbox = valueInterval===0 && !isActiveInterval
 
+    const changeValueInterval = (e:ChangeEvent<HTMLInputElement>) => {
+        changeInterval(period,Number(e.target.value),isActiveInterval)
+    }
+    const changePeriod = (e:string) => {
+        changeInterval(e,valueInterval,isActiveInterval)
+    }
+
+    const changeIsActiveInterval = (isActive:boolean) => {
+        changeInterval(period,valueInterval,isActive)
+    }
 
     return (
         <IntervalContainer>

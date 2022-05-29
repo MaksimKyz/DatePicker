@@ -1,71 +1,62 @@
-import React, {ChangeEvent, FC, useCallback, useEffect, useState} from 'react';
+import React, {ChangeEvent, FC, useContext, useEffect, useState} from 'react';
 import styled from "styled-components";
 import moment from "moment";
 import CalendarGrid from "./CalendarGrid/CalendarGrid";
 import MonthSwitcher from "./MonthSwitcher/MonthSwitcher";
 import TimeSwitcher from "./TimeSwitcher/TimeSwitcher";
 import CustomInput from "../../CustomInput/CustomInput";
-import {valuesDatePicker} from "../../SuperDataPicker/SuperDataPicker";
+import {Context} from "../../../Context/Context";
+import {TypeMoment} from "../../SuperDataPicker/SuperDataPicker";
+import ChangeMonth from "./ChangeMonth/ChangeMonth";
+import ChangeYear from "./ChangeYear/ChangeYear";
 
 export interface AbsoluteTabProps {
     tittle?:string;
-    changeValue:(e:valuesDatePicker)=>void;
-    currentMoment:moment.Moment
 }
 
-const AbsoluteTab: FC<AbsoluteTabProps> = ({currentMoment,...props}) => {
-    moment.updateLocale('en',{week:{dow:1}})
-    const [today,setToday] = useState<moment.Moment>(currentMoment)
-    const [currentDayAndTime,setCurrentDayAndTime] = useState([currentMoment.format('MMM D, YYYY'),currentMoment.format('HH:mm:ss')])
-    const [input,setInput] = useState(today.format('MMM D, YYYY HH:mm:ss'))
-    const joinedDateAndTime = currentDayAndTime.join(' ')
+const AbsoluteTab: FC<AbsoluteTabProps> = (props) => {
+    const { momentField,changeMoment } = useContext(Context)
+    const [inputValue,setInputValue] = useState(momentField.moment.format('MMM DD, YYYY HH:mm:ss'))
+    const [changeMonth,setChangeMonth] = useState(false)
+    const [changeYear,setChangeYear] = useState(false)
+
+
+    const showChangeMonth = (isShow:boolean) =>{
+        setChangeMonth(isShow)
+    }
+
+    const showChangeYear = (isShow:boolean) =>{
+        setChangeYear(isShow)
+    }
+
+    const changeInput = (e:ChangeEvent<HTMLInputElement>) => {
+        setInputValue(e.target.value)
+    }
 
     useEffect(()=>{
-        props.changeValue({tittle:joinedDateAndTime,moment:moment(joinedDateAndTime),text:joinedDateAndTime})
-        setInput(joinedDateAndTime)
-    },[currentDayAndTime])
+        if (moment(inputValue).isValid()){
+            changeMoment(moment(inputValue),TypeMoment.Absolute)
+        }
+    },[inputValue])
 
-
-
-    const onChange = (e:ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
-        setInput(value)
-        props.changeValue({tittle:value,moment:moment(value),text:value})
-    }
-
-    const decrementMonth = () => {
-        setToday(prevState => prevState.clone().subtract(1,'month'))
-    }
-    const incrementMonth = () => {
-        setToday(prevState => prevState.clone().add(1,'month'))
-    }
-
-    const changeDate = (date:string) =>{
-        setCurrentDayAndTime([date,currentDayAndTime[1]])
-    }
-
-    const changeTime = (time:string) =>{
-        setCurrentDayAndTime([currentDayAndTime[0],time])
-    }
 
     return (
         <div>
             <AbsoluteTabContainer>
-                <div>
-                    <MonthSwitcher
-                        today={today}
-                        decrementMonth={decrementMonth}
-                        incrementMonth={incrementMonth}
-                    />
-                    <CalendarGrid
-                        today={today}
-                        changeToday={changeDate}
-                    />
-                </div>
-                <TimeSwitcher changeTime={changeTime} />
+                {changeMonth && <ChangeMonth closeChangeMonth={showChangeMonth}/>}
+                {changeYear && <ChangeYear closeChangeYear={showChangeYear}/>}
+                {!changeMonth && !changeYear &&
+                    <>
+                        <div>
+                            <MonthSwitcher setChangeYear={showChangeYear} setChangeMonth={showChangeMonth}/>
+                            <CalendarGrid/>
+                        </div>
+                        <TimeSwitcher/>
+                    </>
+                }
             </AbsoluteTabContainer>
             <InputContainer>
-                <CustomInput width='100%' value={input} onChange={onChange}/>
+                <CustomInput width='100%' value={inputValue} onChange={changeInput}/>
             </InputContainer>
         </div>
     );
