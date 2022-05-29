@@ -29,7 +29,7 @@ export interface valuesDatePicker{
 
 export interface SuperDataPickerProps {
     showUpdateButton?:boolean
-    onTimeChange:(start:string,end:string)=>void
+    onTimeChange:(start:moment.Moment,end:moment.Moment)=>void
     start?:string;
     end?:string
 }
@@ -40,17 +40,12 @@ const SuperDataPicker: FC<SuperDataPickerProps> = ({showUpdateButton= true,onTim
     const [textForQuick,setTextForQuick] = useState('')
     const [isSent,setSent] = useState(true)
 
-    const {time:timeStart,timeName:timeNameStart} = useDecipherRelative(startValue.moment)
-    const {time:timeEnd,timeName:timeNameEnd} = useDecipherRelative(endValue.moment)
 
     const {currentMoment:startMoment,type:startType} = useDecipher(start)
     const {currentMoment:endMoment,type:endType} = useDecipher(end)
 
-    const encryptStart = useEncrypt(startValue.moment)
-    const encryptEnd = useEncrypt(endValue.moment)
-
     const timeChange = () => {
-        onTimeChange(encryptStart,encryptEnd)
+        onTimeChange(startValue.moment,endValue.moment)
     }
 
     useEffect(()=>{
@@ -64,14 +59,6 @@ const SuperDataPicker: FC<SuperDataPickerProps> = ({showUpdateButton= true,onTim
         }
     },[startValue,endValue])
 
-    useEffect(()=>{
-        if (endValue.type===TypeMoment.Now && startValue.type === TypeMoment.Relative && isSent){
-            setTextForQuick(`Last ${timeStart} ${Time(timeNameStart)}`)
-        }
-        if (startValue.type===TypeMoment.Now && endValue.type === TypeMoment.Relative && isSent){
-            setTextForQuick(`Next ${timeEnd} ${Time(timeNameEnd)}`)
-        }
-    },[isSent,timeStart,timeNameStart,timeEnd,timeNameEnd])
     const onButtonClick = () => {
         timeChange()
         setSent(true)
@@ -105,7 +92,14 @@ const SuperDataPicker: FC<SuperDataPickerProps> = ({showUpdateButton= true,onTim
                         <DatePickerMenu clickCommonlyUsed={clickCommonlyUsed} onPeriodChange={timeChange}/>
                     <PickerFields>
 
-                        <QuickValue deleteQuick={deleteQuick} text={textForQuick}/>
+                        <QuickValue
+                            startValue={startValue}
+                            endValue={endValue}
+                            textForQuick={textForQuick}
+                            isSent={isSent}
+                            deleteQuick={deleteQuick}
+                            text={textForQuick}
+                        />
 
                         <Value isUpdate={false} isError={isError}>
                             <Context.Provider value={{ momentField:startValue,changeMoment:changeStart}}>

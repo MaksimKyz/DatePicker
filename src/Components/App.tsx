@@ -13,12 +13,11 @@ export interface valueInterface{
 
 
 const App: FC<AppProps> = (props) => {
-    moment.updateLocale('en',{week:{dow:1}})
-    const onTimeChange = (start:string, end:string) =>{
+
+
+    const onTimeChange = (start:moment.Moment, end:moment.Moment) =>{
         console.log(start,end)
     }
-
-
 
     return (
         <ContainerCenter>
